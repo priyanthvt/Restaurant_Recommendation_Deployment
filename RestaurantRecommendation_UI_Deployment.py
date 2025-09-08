@@ -45,6 +45,14 @@ def recommend_by_all_inputs(city, cuisine, rating, rating_count, cost, df,
 
     scaled_numeric = pd.DataFrame(scaler.transform(numeric_input), columns=numeric_input.columns)
 
+    # Check if city and cuisine are known to encoder
+    if city not in city_encoder.classes_:
+        st.warning(f"City '{city}' not in known cities.")
+        return pd.DataFrame()
+    if cuisine not in cuisine_encoder.classes_:
+        st.warning(f"Cuisine '{cuisine}' not in known cuisines.")
+        return pd.DataFrame()
+
     city_encoded = pd.DataFrame(city_encoder.transform([[city]]),
                                 columns=city_encoder.classes_)
 
@@ -53,11 +61,17 @@ def recommend_by_all_inputs(city, cuisine, rating, rating_count, cost, df,
 
     input_vector = pd.concat([scaled_numeric, city_encoded, cuisine_encoded], axis=1)
 
+    # Add missing columns as zero
     missing_cols = set(df.columns) - set(input_vector.columns)
     for col in missing_cols:
         input_vector[col] = 0
 
+    # Ensure same column order
     input_vector = input_vector[df.columns]
+
+    # Debug print shapes
+    st.write("Input vector shape:", input_vector.shape)
+    st.write("Input vector columns:", input_vector.columns)
 
     cluster = kmeans.predict(input_vector)[0]
 
@@ -181,3 +195,4 @@ elif st.session_state['page'] == 'results':
         if st.button("Back to Home"):
             st.session_state['page'] = 'home'
             st.rerun()
+
