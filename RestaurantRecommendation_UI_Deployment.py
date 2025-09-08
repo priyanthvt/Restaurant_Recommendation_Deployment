@@ -6,7 +6,7 @@ import io
 
 st.set_page_config(
     page_title="Swiggy Restaurant Recommendation",
-    page_icon="https://cdn-icons-png.flaticon.com/512/3075/3075977.png",  # Example: food icon
+    page_icon="https://cdn-icons-png.flaticon.com/512/3075/3075977.png",  # food icon
     layout="wide"
 )
 
@@ -45,7 +45,7 @@ def recommend_by_all_inputs(city, cuisine, rating, rating_count, cost, df,
 
     scaled_numeric = pd.DataFrame(scaler.transform(numeric_input), columns=numeric_input.columns)
 
-    # Check if city and cuisine are known to encoder
+    # Check city and cuisine validity
     if city not in city_encoder.classes_:
         st.warning(f"City '{city}' not in known cities.")
         return pd.DataFrame()
@@ -61,17 +61,14 @@ def recommend_by_all_inputs(city, cuisine, rating, rating_count, cost, df,
 
     input_vector = pd.concat([scaled_numeric, city_encoded, cuisine_encoded], axis=1)
 
-    # Add missing columns as zero
-    missing_cols = set(df.columns) - set(input_vector.columns)
+    # Align columns to model expected features
+    model_features = kmeans.feature_names_in_ if hasattr(kmeans, 'feature_names_in_') else df.columns
+
+    missing_cols = set(model_features) - set(input_vector.columns)
     for col in missing_cols:
         input_vector[col] = 0
 
-    # Ensure same column order
-    input_vector = input_vector[df.columns]
-
-    # Debug print shapes
-    st.write("Input vector shape:", input_vector.shape)
-    st.write("Input vector columns:", input_vector.columns)
+    input_vector = input_vector[model_features]
 
     cluster = kmeans.predict(input_vector)[0]
 
@@ -107,7 +104,7 @@ if st.session_state['page'] == 'home':
 
     if st.button("Go to Search"):
         st.session_state['page'] = 'search'
-        st.rerun()
+        st.experimental_rerun()
 
 
 # SEARCH SCREEN
@@ -128,29 +125,27 @@ elif st.session_state['page'] == 'search':
 
     st.markdown("<h2 style='color:white;'>Search for Restaurants</h2>", unsafe_allow_html=True)
 
-    city = st.text_input('Enter city')
-    cuisine = st.text_input('Enter cuisine')
+    # Use dropdowns for city and cuisine to avoid invalid input
+    city = st.selectbox('Select city', options=city_encoder.classes_)
+    cuisine = st.selectbox('Select cuisine', options=cuisine_encoder.classes_)
     rating = st.number_input('Enter rating', min_value=0.0, max_value=5.0, step=0.1)
     rating_count = st.number_input('Enter rating count', min_value=1)
     cost = st.number_input('Enter cost', min_value=1)
 
     if st.button("Search"):
-        if city and cuisine and rating and rating_count and cost:
-            st.session_state['inputs'] = {
-                "city": city,
-                "cuisine": cuisine,
-                "rating": rating,
-                "rating_count": rating_count,
-                "cost": cost
-            }
-            st.session_state['page'] = 'results'
-            st.rerun()
-        else:
-            st.warning("Please fill in all fields.")
+        st.session_state['inputs'] = {
+            "city": city,
+            "cuisine": cuisine,
+            "rating": rating,
+            "rating_count": rating_count,
+            "cost": cost
+        }
+        st.session_state['page'] = 'results'
+        st.experimental_rerun()
 
     if st.button("Back to Home"):
         st.session_state['page'] = 'home'
-        st.rerun()
+        st.experimental_rerun()
 
 
 # RESULTS SCREEN
@@ -164,7 +159,7 @@ elif st.session_state['page'] == 'results':
         st.warning("No inputs provided. Please go back to Search.")
         if st.button("Back to Search"):
             st.session_state['page'] = 'search'
-            st.rerun()
+            st.experimental_rerun()
     else:
         result_df = recommend_by_all_inputs(
             user_input['city'], user_input['cuisine'], user_input['rating'],
@@ -172,27 +167,29 @@ elif st.session_state['page'] == 'results':
             df, city_encoder, cuisine_encoder, scaler, kmeans, clustered_df
         )
 
-        result_df = result_df.sort_values(by='rating', ascending=False)
-
-        result_df = result_df[
-            result_df['cuisine'].apply(lambda x: any(user_input['cuisine'].lower() in item.strip().lower()
-                                                     for item in x.split(',')))]
-        result_df = result_df[
-            result_df['city'].apply(lambda x: any(user_input['city'].lower() in item.strip().lower()
-                                                  for item in x.split(',')))]
-
         if result_df.empty:
             st.warning("No matching restaurants found for the given inputs.")
         else:
-            st.dataframe(result_df[['name', 'city', 'cuisine', 'cost', 'rating', 'rating_count']].head(30).reset_index(drop=True))
+            # Further filter results to exact city/cuisine match (case-insensitive)
+            result_df = result_df[
+                result_df['cuisine'].str.lower().str.contains(user_input['cuisine'].lower())
+            ]
+            result_df = result_df[
+                result_df['city'].str.lower().str.contains(user_input['city'].lower())
+            ]
+
+            if result_df.empty:
+                st.warning("No matching restaurants found after filtering.")
+            else:
+                result_df = result_df.sort_values(by='rating', ascending=False)
+                st.dataframe(result_df[['name', 'city', 'cuisine', 'cost', 'rating', 'rating_count']].head(30).reset_index(drop=True))
 
     col1, col2 = st.columns(2)
     with col1:
         if st.button("Search Again"):
             st.session_state['page'] = 'search'
-            st.rerun()
+            st.experimental_rerun()
     with col2:
         if st.button("Back to Home"):
             st.session_state['page'] = 'home'
-            st.rerun()
-
+            st.experimental_rerun()
