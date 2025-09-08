@@ -126,8 +126,10 @@ elif st.session_state['page'] == 'search':
     st.markdown("<h2 style='color:white;'>Search for Restaurants</h2>", unsafe_allow_html=True)
 
     # Use dropdowns for city and cuisine to avoid invalid input
-    city = st.selectbox('Select city', options=city_encoder.classes_)
-    cuisine = st.selectbox('Select cuisine', options=cuisine_encoder.classes_)
+    # city = st.selectbox('Select city', options=city_encoder.classes_)
+    # cuisine = st.selectbox('Select cuisine', options=cuisine_encoder.classes_)
+    city = st.text_input('Enter city')
+    cuisine = st.text_input('Enter cuisine')
     rating = st.number_input('Enter rating', min_value=0.0, max_value=5.0, step=0.1)
     rating_count = st.number_input('Enter rating count', min_value=1)
     cost = st.number_input('Enter cost', min_value=1)
@@ -193,4 +195,5 @@ elif st.session_state['page'] == 'results':
         if st.button("Back to Home"):
             st.session_state['page'] = 'home'
             st.rerun()
+
 
