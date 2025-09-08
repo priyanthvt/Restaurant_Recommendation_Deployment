@@ -104,7 +104,7 @@ if st.session_state['page'] == 'home':
 
     if st.button("Go to Search"):
         st.session_state['page'] = 'search'
-        st.experimental_rerun()
+        st.rerun()
 
 
 # SEARCH SCREEN
@@ -141,11 +141,11 @@ elif st.session_state['page'] == 'search':
             "cost": cost
         }
         st.session_state['page'] = 'results'
-        st.experimental_rerun()
+        st.rerun()
 
     if st.button("Back to Home"):
         st.session_state['page'] = 'home'
-        st.experimental_rerun()
+        st.rerun()
 
 
 # RESULTS SCREEN
@@ -159,7 +159,7 @@ elif st.session_state['page'] == 'results':
         st.warning("No inputs provided. Please go back to Search.")
         if st.button("Back to Search"):
             st.session_state['page'] = 'search'
-            st.experimental_rerun()
+            st.rerun()
     else:
         result_df = recommend_by_all_inputs(
             user_input['city'], user_input['cuisine'], user_input['rating'],
@@ -188,8 +188,9 @@ elif st.session_state['page'] == 'results':
     with col1:
         if st.button("Search Again"):
             st.session_state['page'] = 'search'
-            st.experimental_rerun()
+            st.rerun()
     with col2:
         if st.button("Back to Home"):
             st.session_state['page'] = 'home'
-            st.experimental_rerun()
+            st.rerun()
+
