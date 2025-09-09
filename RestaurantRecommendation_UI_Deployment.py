@@ -38,6 +38,12 @@ kmeans = load_pickle_from_drive(file_ids["kmeans_model"])
 city_encoder = load_pickle_from_drive(file_ids["city_encoder"])
 cuisine_encoder = load_pickle_from_drive(file_ids["cuisine_encoder"])
 
+clustered_df['cuisine_list'] = clustered_df['cuisine'].apply(lambda x: [i.strip() for i in x.split(',')])
+all_cuisines = sorted(set(cuisine for sublist in clustered_df['cuisine_list'] for cuisine in sublist))
+
+clustered_df['city_list'] = clustered_df['city'].apply(lambda x: [i.strip() for i in x.split(',')])
+all_cities = sorted(set(city for sublist in clustered_df['city_list'] for city in sublist))
+
 def recommend_by_all_inputs(city, cuisine, rating, rating_count, cost, df,
                             city_encoder, cuisine_encoder, scaler, kmeans, clustered_df):
     numeric_input = pd.DataFrame([[rating, rating_count, cost]],
@@ -128,8 +134,10 @@ elif st.session_state['page'] == 'search':
     # Use dropdowns for city and cuisine to avoid invalid input
     # city = st.selectbox('Select city', options=city_encoder.classes_)
     # cuisine = st.selectbox('Select cuisine', options=cuisine_encoder.classes_)
-    city = st.text_input('Enter city')
-    cuisine = st.text_input('Enter cuisine')
+    # city = st.text_input('Enter city')
+    # cuisine = st.text_input('Enter cuisine')
+    city = st.selectbox('Select city', options=all_cities)
+    cuisine = st.selectbox('Select cuisine', options=all_cuisines)
     rating = st.number_input('Enter rating', min_value=0.0, max_value=5.0, step=0.1)
     rating_count = st.number_input('Enter rating count', min_value=1)
     cost = st.number_input('Enter cost', min_value=1)
@@ -195,5 +203,6 @@ elif st.session_state['page'] == 'results':
         if st.button("Back to Home"):
             st.session_state['page'] = 'home'
             st.rerun()
+
 
 
