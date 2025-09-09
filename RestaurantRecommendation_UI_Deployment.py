@@ -190,7 +190,7 @@ elif st.session_state['page'] == 'results':
 
             if result_df.empty:
                 # st.warning("No matching restaurants found after filtering.")
-                st.markdown("<h4 style='color:white; background-color:#ffcc00; padding:10px; border-radius:5px;'>No matching restaurants found after filtering.</h4>", unsafe_allow_html=True)
+                st.markdown("<p style='color:white; font-size:16px;'>No matching restaurants found. Please try again.</p>", unsafe_allow_html=True)
             else:
                 result_df = result_df.sort_values(by='rating', ascending=False)
                 st.dataframe(result_df[['name', 'city', 'cuisine', 'cost', 'rating', 'rating_count']].head(30).reset_index(drop=True))
@@ -204,6 +204,7 @@ elif st.session_state['page'] == 'results':
         if st.button("Back to Home"):
             st.session_state['page'] = 'home'
             st.rerun()
+
 
 
 
