@@ -22,12 +22,12 @@ def load_pickle_from_drive(file_id):
     return pickle.load(io.BytesIO(response.content))
 
 file_ids = {
-    "kmeans_trained_df": "1qgpaFP4o30QoUF2lkyPtL4kab5lb3-az",
-    "clustered_df": "1gH-aMkgGXvauK56vlx-DfFXebuDsnLmN",
-    "scaler": "1MnK1oVgqBidERQB1hNGVZbgTErqucHFk",
-    "kmeans_model": "1upNugSoFIUTogVDioKEkHNoOWXvRD5OE",
-    "city_encoder": "1e_eb84newGvAyDaZ6h_kRceFStwTg6af",
-    "cuisine_encoder": "103K8wOgJWJYYRPce-KFVTqCV2tX0NrHI",
+    "kmeans_trained_df": "1nYB_xC-3qor1tSsk3k6HNLBP2f9R9bcZ",
+    "clustered_df": "1j94xj0dgDPkO_Y70GRfuw4HM48T6kIrh",
+    "scaler": "1Fa5DEW3QQo8ir0UOjVt8x5vqDR5vnDtg",
+    "kmeans_model": "1h5X4IuTVxFMFUhgCZFjJoSTDIROsRDlL",
+    "city_encoder": "1HD6YC6IEt5n899bYlwSW63XWKAcAmPtQ",
+    "cuisine_encoder": "1C1IGaGeFHiqncHTulqN-hayEZbVnDo2a",
 }
 
 df = load_csv_from_drive(file_ids["kmeans_trained_df"])
@@ -203,6 +203,7 @@ elif st.session_state['page'] == 'results':
         if st.button("Back to Home"):
             st.session_state['page'] = 'home'
             st.rerun()
+
 
 
 
